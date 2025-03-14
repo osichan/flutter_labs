@@ -1,0 +1,27 @@
+# Flutter/Dart specific
+.dart_tool/
+.packages
+build/
+android/.gradle/
+android/app/debug.keystore
+
+# Xcode specific
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# IntelliJ / VS Code / JetBrains IDE
+.idea/
+*.iml
+
+# Windows/macOS/Linux build files
+windows/
+macos/
+linux/
+
+# Flutter dependency cache
+pubspec.lock
+
+# Environment files
+.env

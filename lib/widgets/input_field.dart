@@ -5,10 +5,10 @@ class InputField extends StatelessWidget {
   final Function(String) onSubmitted;
 
   const InputField({
-    super.key,
+    Key? key,
     required this.controller,
     required this.onSubmitted,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +21,11 @@ class InputField extends StatelessWidget {
             labelText: 'Enter number or spell',
             border: OutlineInputBorder(),
           ),
-          onChanged:
-              (value) => {
-                if (value.length == 6) {onSubmitted(value)},
-              },
+          onChanged: (value) {
+            if (value.length == 6) {
+              onSubmitted(value);
+            }
+          },
         ),
         const SizedBox(height: 10),
       ],

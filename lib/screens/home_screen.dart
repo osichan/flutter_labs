@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lab/widgets/input_field.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();

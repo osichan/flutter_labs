@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lab/services/auth_service.dart';
 
+import '../services/shared_preferences_storage.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -9,19 +11,48 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? _email;
+  final _authService = AuthService(SharedPreferencesStorage());
+  Map<String, dynamic>? _userData;
+  final _nameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadEmail();
+    _loadUserData();
   }
 
-  Future<void> _loadEmail() async {
-    final email = await AuthService.getUserEmail();
-    setState(() {
-      _email = email ?? 'No email found';
-    });
+  Future<void> _loadUserData() async {
+    final email = await _authService.getCurrentUserEmail();
+    if (email != null) {
+      final user = await _authService.getUser(email);
+      if (user != null && mounted) {
+        setState(() {
+          _userData = user;
+          _nameController.text = user['name'] ?? '';
+        });
+      }
+    }
+  }
+
+  Future<void> _updateUser() async {
+    if (_userData != null) {
+      final updatedData = {..._userData!, 'name': _nameController.text.trim()};
+      await _authService.updateUser(_userData!['email'], updatedData);
+      if (mounted) setState(() => _userData = updatedData);
+    }
+  }
+
+  Future<void> _deleteUser() async {
+    if (_userData != null) {
+      await _authService.deleteUser(_userData!['email']);
+      if (context.mounted) Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -29,23 +60,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Profile")),
       body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40)),
-            const SizedBox(height: 16),
-            Text(_email ?? 'Loading...', style: const TextStyle(fontSize: 18)),
-            TextButton(
-              onPressed: () async {
-                await AuthService.logout();
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/login');
-                }
-              },
-              child: const Text("Logout"),
-            ),
-          ],
-        ),
+        padding: const EdgeInsets.all(24.0),
+        child:
+            _userData == null
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                  children: [
+                    const CircleAvatar(
+                      radius: 40,
+                      child: Icon(Icons.person, size: 40),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Email: ${_userData!['email']}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Name'),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _updateUser,
+                      child: const Text('Update Name'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await _authService.logout();
+                        if (context.mounted)
+                          Navigator.pushReplacementNamed(context, '/login');
+                      },
+                      child: const Text("Logout"),
+                    ),
+                  ],
+                ),
       ),
     );
   }

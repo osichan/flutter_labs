@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../services/auth_service.dart';
+import '../services/shared_preferences_storage.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
-import '../services/auth_service.dart';
-import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -15,50 +16,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _nameController = TextEditingController();
   String? _error;
+  final _authService = AuthService(SharedPreferencesStorage());
 
   void _register() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirm = _confirmController.text.trim();
+    final name = _nameController.text.trim();
 
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!emailRegex.hasMatch(email)) {
       setState(() => _error = 'Please enter a valid email address');
       return;
     }
-
     if (password.length < 6) {
       setState(() => _error = 'Password must be at least 6 characters');
       return;
     }
-
     if (password != confirm) {
       setState(() => _error = 'Passwords do not match');
       return;
     }
-
-    await AuthService.login(email, password);
-
-    if (context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+    if (name.isEmpty) {
+      setState(() => _error = 'Please enter your name');
+      return;
     }
+
+    final success = await _authService.register(email, password, name);
+    if (success && context.mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      setState(() => _error = 'User already exists');
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    _nameController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text("Register", style: TextStyle(fontSize: 32)),
             const SizedBox(height: 24),
             CustomTextField(controller: _emailController, label: 'Email'),
+            CustomTextField(controller: _nameController, label: 'Name'),
             CustomTextField(
               controller: _passwordController,
               label: 'Password',

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../services/auth_service.dart';
+import '../services/network_service.dart';
 import '../services/shared_preferences_storage.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
@@ -17,8 +17,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   String? _error;
   final _authService = AuthService(SharedPreferencesStorage());
+  final _networkService = NetworkService();
 
-  void _login() async {
+  Future<void> _login() async {
+    final isConnected = await _networkService.isConnected();
+    if (!isConnected) {
+      setState(() => _error = 'No internet connection');
+      return;
+    }
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 

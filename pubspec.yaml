@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   shared_preferences: ^2.2.2
   torch_light: ^1.1.0
+  mqtt_client: ^10.0.0  # Added for MQTT functionality
+  connectivity_plus: ^6.0.0  # Added for internet connectivity checks
 
 dev_dependencies:
   flutter_test:
